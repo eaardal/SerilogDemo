@@ -19,54 +19,36 @@ namespace SerilogDemo
     {
         static void Main(string[] args)
         {
+            EnableSelfLog();
+
             const string outputTemplate =
 @"=== Meta ===
 Timestamp=""{Timestamp}""
 Level=""{Level}""
 
 === Context ===
-Applikasjon=""{Applikasjon}""
+Application=""{Applikasjon}""
 ThreadId=""{ThreadId}""
-Cool=""{Cool}""
 
 === Message ===
 {Message}
 ";
-
-            EnableSelfLog();
-
-            var customFields = new CustomFields
-            {
-                CustomFieldList = new List<CustomField>
-                {
-                    new CustomField("MyCustomField", "MyCustomFieldValue")
-                }
-            };
-
+            
             var loggerConfiguration = new LoggerConfiguration();
+
             loggerConfiguration
                 .Enrich.With(new ThreadIdEnricher())
-                .Enrich.WithProperty("Applikasjon", "Betaling.Api")
-                .Destructure.AsScalar<string>()
+                .Enrich.WithProperty("Application", "MyApp")
                 .WriteTo.ColoredConsole(outputTemplate: outputTemplate)
                 .WriteTo.EventCollector("http://localhost:8088/", "b9543dee-981a-4175-a3e9-963bbcebf677", outputTemplate: outputTemplate)
-                //.WriteTo.EventLog(
-                //    machineName: Environment.MachineName,
-                //    logName: "Dbank",
-                //    source: "Spv.Logging.Demo"
-                //    )
                 ;
 
             var logger = loggerConfiguration.CreateLogger();
 
             var dict = new Dictionary<string, string> { { "foo", "gdfg" }, { "bar", "asda" } };
 
-            logger.Information("Dette er innholdet: {Dict}", dict);
-
-            //var logger2 = logger.ForContext("Cool", "Yolo");
-
-            //logger2.Information("Denne skal inneholde ForContext verdi");
-            // a8dd6aa7-f44b-49a7-8224-209cf73dfc93
+            logger.Information("Some content: {Dict}", dict);
+            
             Console.ReadLine();
         }
 
